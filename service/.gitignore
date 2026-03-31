@@ -1,0 +1,8 @@
+node_modules
+dist
+
+# Prisma's generated client (recreated by `npm install` / `npm run prisma:generate`)
+src/generated
+
+# Secrets
+.env
