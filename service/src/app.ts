@@ -4,6 +4,7 @@ import helmet from 'helmet'
 import { pinoHttp } from 'pino-http'
 import { errorHandler } from './middlewares/error-handler.js'
 import { notFoundHandler } from './middlewares/not-found-handler.js'
+import { healthRouter } from './modules/health/health.routes.js'
 import { logger } from './shared/logger.js'
 
 // Builds the Express app without starting it, so tests can use it directly.
@@ -43,6 +44,9 @@ export function createApp(): Express {
   )
   app.use(cors()) // allow calls from any future frontend
   app.use(express.json({ limit: '100kb' })) // parse JSON bodies
+
+  // --- Routes ---
+  app.use('/health', healthRouter)
 
   // --- Must stay last ---
   app.use(notFoundHandler)

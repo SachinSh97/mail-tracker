@@ -1,5 +1,6 @@
 import { createApp } from './app.js'
 import { env } from './config/env.js'
+import { prisma } from './database/prisma-client.js'
 import { logger } from './shared/logger.js'
 
 // Entry point: starts the HTTP server and shuts it down cleanly.
@@ -10,7 +11,7 @@ const server = app.listen(env.PORT, () => {
 })
 
 // Render sends SIGTERM before stopping/redeploying; Ctrl+C sends SIGINT.
-// Stop taking new requests and let current ones finish.
+// Stop taking new requests, let current ones finish, then close the database pool.
 let shuttingDown = false
 
 async function shutdown(signal: NodeJS.Signals): Promise<void> {
@@ -24,7 +25,8 @@ async function shutdown(signal: NodeJS.Signals): Promise<void> {
     process.exit(1)
   }, 10_000).unref()
 
-  server.close(() => {
+  server.close(async () => {
+    await prisma.$disconnect()
     logger.info('Shutdown complete')
     process.exit(0)
   })

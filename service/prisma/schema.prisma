@@ -1,0 +1,113 @@
+// Database schema for Mail Tracker (v1: pixel tracking only).
+//
+// Words used here:
+//   User       = someone who signed in with Google; owns collections and trackers
+//   Collection = optional group of trackers (e.g. one company)
+//   Tracker    = one per email you send; its invisible pixel goes inside the email
+//   Hit        = every time the pixel is loaded (all are logged, even ignored ones)
+//   Open       = the first hit that counts; a tracker is opened only once
+//
+// Every collection and tracker belongs to one user, and only that user can see it.
+
+generator client {
+  provider            = "prisma-client"
+  output              = "../src/generated/prisma"
+  moduleFormat        = "esm"
+  importFileExtension = "js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+/// What happened to a hit after our rules looked at it.
+enum HitOutcome {
+  COUNTED_AS_OPEN // first valid hit: this is what marked the tracker opened
+  ALREADY_OPENED // valid, but the tracker was opened earlier
+  IGNORED_GRACE_PERIOD // came too soon after creation (e.g. your own draft loading the pixel)
+  IGNORED_OWNER // came from you (same IP that created the tracker)
+  IGNORED_BOT // came from a security scanner or bot, not a person
+
+  @@map("hit_outcome")
+}
+
+/// Someone who signed in with Google. Created on their first sign-in, no sign-up step.
+model User {
+  id           String   @id @default(uuid())
+  /// Google's ID for the account ("sub"). Never changes, even if the Gmail address does,
+  /// so this is how we recognise a returning user.
+  googleId     String   @unique @map("google_id")
+  /// Current Google email, lowercase. Refreshed on every sign-in.
+  email        String
+  /// Display name from Google, e.g. "Sachin Sharma"
+  name         String?
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  lastSignInAt DateTime @default(now()) @map("last_sign_in_at") @db.Timestamptz(3)
+
+  collections Collection[]
+  trackers    Tracker[]
+
+  @@map("users")
+}
+
+/// Optional folder that groups trackers, e.g. "Razorpay – Senior Frontend".
+/// Trackers can also live on their own without a collection.
+model Collection {
+  id          String   @id @default(uuid())
+  /// Who owns it. Deleting the user deletes their collections.
+  userId      String   @map("user_id")
+  name        String
+  description String?
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  trackers Tracker[]
+
+  @@index([userId, createdAt])
+  @@map("collections")
+}
+
+/// One tracker per email sent.
+model Tracker {
+  /// Short random ID used in the pixel URL, e.g. "kX3v9QpL2mZa"
+  id              String    @id
+  /// Who owns it (the sender). Deleting the user deletes their trackers and hits.
+  userId          String    @map("user_id")
+  /// Readable label shown in lists, e.g. "Razorpay – HR"
+  name            String
+  /// Subject line of the email, if known
+  emailSubject    String?   @map("email_subject")
+  /// Who the email was sent to (To + CC + BCC), typed in the web app
+  recipientEmails String[]  @default([]) @map("recipient_emails")
+  /// Empty when the tracker isn't in a collection. Deleting a collection keeps its trackers.
+  collectionId    String?   @map("collection_id")
+  /// IP of the computer that created the tracker, so your own hits can be ignored
+  creatorIp       String?   @map("creator_ip")
+  createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  /// Empty until the first counted hit
+  openedAt        DateTime? @map("opened_at") @db.Timestamptz(3)
+
+  user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  collection Collection? @relation(fields: [collectionId], references: [id], onDelete: SetNull)
+  hits       Hit[]
+
+  @@index([userId, createdAt])
+  @@index([collectionId])
+  @@map("trackers")
+}
+
+/// Every time a tracker's pixel was loaded, kept for analysis even when ignored.
+model Hit {
+  id        String     @id @default(uuid())
+  trackerId String     @map("tracker_id")
+  outcome   HitOutcome
+  ipAddress String?    @map("ip_address")
+  userAgent String?    @map("user_agent")
+  createdAt DateTime   @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  tracker Tracker @relation(fields: [trackerId], references: [id], onDelete: Cascade)
+
+  @@index([trackerId, createdAt])
+  @@map("hits")
+}
