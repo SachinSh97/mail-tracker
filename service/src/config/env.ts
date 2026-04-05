@@ -8,6 +8,18 @@ const envSchema = z.object({
   LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent']).default('info'),
 
   DATABASE_URL: z.url({ message: 'must be a Postgres connection string from Neon' }),
+
+  // --- Auth: "Sign in with Google" ---
+  // Client ID from Google Cloud Console → Google Auth Platform → Clients. Not a secret.
+  GOOGLE_CLIENT_ID: z
+    .string({ message: 'is required (Google Cloud Console → Google Auth Platform → Clients)' })
+    .endsWith('.apps.googleusercontent.com', { message: 'must end with .apps.googleusercontent.com' }),
+  // Signs our own session tokens. Keep it secret; changing it signs everyone out.
+  SESSION_SECRET: z
+    .string({ message: 'is required, generate one (see .env.example)' })
+    .min(32, { message: 'must be at least 32 characters' }),
+  // How many days you stay signed in
+  SESSION_TTL_DAYS: z.coerce.number().int().min(1).max(365).default(30),
 })
 
 export type Env = z.infer<typeof envSchema>

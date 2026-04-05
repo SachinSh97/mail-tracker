@@ -5,6 +5,7 @@ import { pinoHttp } from 'pino-http'
 import { errorHandler } from './middlewares/error-handler.js'
 import { notFoundHandler } from './middlewares/not-found-handler.js'
 import { healthRouter } from './modules/health/health.routes.js'
+import { apiV1Router } from './routes/api-v1.routes.js'
 import { logger } from './shared/logger.js'
 
 // Builds the Express app without starting it, so tests can use it directly.
@@ -47,6 +48,7 @@ export function createApp(): Express {
 
   // --- Routes ---
   app.use('/health', healthRouter)
+  app.use('/api/v1', apiV1Router) // private: needs a logged-in user
 
   // --- Must stay last ---
   app.use(notFoundHandler)
