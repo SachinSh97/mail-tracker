@@ -1,6 +1,7 @@
 import { Router } from 'express'
 import { authenticate } from '../middlewares/authenticate.js'
 import { authRouter, publicAuthRouter } from '../modules/auth/auth.routes.js'
+import { collectionRouter } from '../modules/collections/collection.routes.js'
 
 export const apiV1Router = Router()
 
@@ -11,3 +12,4 @@ apiV1Router.use('/', publicAuthRouter) // POST /api/v1/auth/google
 apiV1Router.use(authenticate)
 
 apiV1Router.use('/', authRouter) // GET /api/v1/me
+apiV1Router.use('/collections', collectionRouter)

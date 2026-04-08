@@ -20,3 +20,9 @@ export async function resetDatabase(): Promise<void> {
   await prisma.$executeRaw`TRUNCATE TABLE hits, trackers, collections, users CASCADE`
   await prisma.user.createMany({ data: [OWNER, OTHER_USER] })
 }
+
+/** A collection that belongs to another user. Returns its id. */
+export async function createSomeoneElsesCollection(): Promise<string> {
+  const collection = await prisma.collection.create({ data: { userId: OTHER_USER.id, name: 'Theirs' } })
+  return collection.id
+}
