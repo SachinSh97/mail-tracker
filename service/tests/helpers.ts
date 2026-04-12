@@ -2,6 +2,7 @@ import request from 'supertest'
 import { createApp } from '../src/app.js'
 import { prisma } from '../src/database/prisma-client.js'
 import { createSessionToken } from '../src/modules/auth/session-token.js'
+import { generateTrackerId } from '../src/modules/trackers/tracker-id.js'
 import { OTHER_USER, OWNER } from './setup/test-users.js'
 
 export * from './setup/test-users.js'
@@ -25,4 +26,12 @@ export async function resetDatabase(): Promise<void> {
 export async function createSomeoneElsesCollection(): Promise<string> {
   const collection = await prisma.collection.create({ data: { userId: OTHER_USER.id, name: 'Theirs' } })
   return collection.id
+}
+
+/** A tracker that belongs to another user. Returns its id. */
+export async function createSomeoneElsesTracker(): Promise<string> {
+  const tracker = await prisma.tracker.create({
+    data: { id: generateTrackerId(), userId: OTHER_USER.id, name: 'Theirs' },
+  })
+  return tracker.id
 }

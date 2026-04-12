@@ -120,3 +120,20 @@ describe('Protected routes', () => {
     expect(res.body).toMatchObject({ status: 'ok', database: 'up' })
   })
 })
+
+describe('Deleting a user', () => {
+  it('deletes all their collections, trackers and hits', async () => {
+    const collection = await api().post('/api/v1/collections').set(asOwner).send({ name: 'Razorpay' })
+    const tracker = await api()
+      .post('/api/v1/trackers')
+      .set(asOwner)
+      .send({ collectionId: collection.body.id })
+    await prisma.hit.create({ data: { trackerId: tracker.body.id, outcome: 'IGNORED_BOT' } })
+
+    await prisma.user.delete({ where: { id: OWNER.id } })
+
+    expect(await prisma.collection.count()).toBe(0)
+    expect(await prisma.tracker.count()).toBe(0)
+    expect(await prisma.hit.count()).toBe(0)
+  })
+})

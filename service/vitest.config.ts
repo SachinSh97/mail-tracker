@@ -15,6 +15,7 @@ export default defineConfig({
       NODE_ENV: 'test',
       LOG_LEVEL: 'silent',
       DATABASE_URL: TEST_DATABASE_URL,
+      PUBLIC_BASE_URL: 'https://tracker.test',
       GOOGLE_CLIENT_ID: 'test-client-id.apps.googleusercontent.com',
       SESSION_SECRET: TEST_SESSION_SECRET,
     },

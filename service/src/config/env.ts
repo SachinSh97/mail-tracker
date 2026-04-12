@@ -9,6 +9,11 @@ const envSchema = z.object({
 
   DATABASE_URL: z.url({ message: 'must be a Postgres connection string from Neon' }),
 
+  // Where tracker links point to; trailing slash removed so we can safely append paths
+  PUBLIC_BASE_URL: z
+    .url({ message: 'must be a full URL like https://my-app.onrender.com' })
+    .transform((url) => url.replace(/\/+$/, '')),
+
   // --- Auth: "Sign in with Google" ---
   // Client ID from Google Cloud Console → Google Auth Platform → Clients. Not a secret.
   GOOGLE_CLIENT_ID: z

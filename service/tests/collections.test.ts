@@ -30,16 +30,22 @@ describe('Collections', () => {
     expect(res.status).toBe(400)
   })
 
-  it('lists collections newest first, with pagination', async () => {
-    await createCollection('First')
+  it('lists collections newest first, with pagination and tracker counts', async () => {
+    const first = await createCollection('First')
     await createCollection('Second')
+    await api().post('/api/v1/trackers').set(asOwner).send({ name: 'A', collectionId: first.id })
+    const opened = await api()
+      .post('/api/v1/trackers')
+      .set(asOwner)
+      .send({ name: 'B', collectionId: first.id })
+    await prisma.tracker.update({ where: { id: opened.body.id }, data: { openedAt: new Date() } })
 
     const res = await api().get('/api/v1/collections?limit=1&offset=1').set(asOwner)
 
     expect(res.status).toBe(200)
     expect(res.body.pagination).toEqual({ limit: 1, offset: 1, total: 2 })
     expect(res.body.items).toHaveLength(1)
-    expect(res.body.items[0]).toMatchObject({ name: 'First', trackerCount: 0, openedCount: 0 })
+    expect(res.body.items[0]).toMatchObject({ name: 'First', trackerCount: 2, openedCount: 1 })
   })
 
   it('updates a collection', async () => {
@@ -49,11 +55,16 @@ describe('Collections', () => {
     expect(res.body.name).toBe('Renamed')
   })
 
-  it('deletes a collection', async () => {
+  it('deleting a collection keeps its trackers as standalone trackers', async () => {
     const { id } = await createCollection()
+    const tracker = await api().post('/api/v1/trackers').set(asOwner).send({ name: 'HR', collectionId: id })
 
     expect((await api().delete(`/api/v1/collections/${id}`).set(asOwner)).status).toBe(204)
     expect((await api().get(`/api/v1/collections/${id}`).set(asOwner)).status).toBe(404)
+
+    const stillThere = await api().get(`/api/v1/trackers/${tracker.body.id}`).set(asOwner)
+    expect(stillThere.status).toBe(200)
+    expect(stillThere.body.collection).toBeNull()
   })
 
   it('returns 400 for a malformed id and 404 for an unknown one', async () => {
