@@ -14,6 +14,9 @@ const envSchema = z.object({
     .url({ message: 'must be a full URL like https://my-app.onrender.com' })
     .transform((url) => url.replace(/\/+$/, '')),
 
+  // Hits this soon after a tracker is created are ignored (e.g. your own draft loading the pixel)
+  TRACKING_GRACE_PERIOD_SECONDS: z.coerce.number().int().min(0).max(3600).default(60),
+
   // --- Auth: "Sign in with Google" ---
   // Client ID from Google Cloud Console → Google Auth Platform → Clients. Not a secret.
   GOOGLE_CLIENT_ID: z
