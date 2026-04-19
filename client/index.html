@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Seenly – See when your emails get opened</title>
+    <meta
+      name="description"
+      content="Seenly tells you when the emails you send get opened. Add an invisible tracking pixel to any email, group emails into collections, and see who opened what, and when."
+    />
+    <meta name="application-name" content="Seenly" />
+    <meta name="color-scheme" content="dark" />
+    <meta name="theme-color" content="#0f0e0c" />
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
+
+    <!-- Icons and installable-app details -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+
+    <!-- How the link looks when shared (Slack, WhatsApp, LinkedIn, X…).
+         og:url, og:image and the canonical link need the full site address: they're added at build time
+         from VITE_SITE_URL (see vite.config.ts). -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Seenly" />
+    <meta property="og:title" content="Seenly – See when your emails get opened" />
+    <meta
+      property="og:description"
+      content="Add an invisible tracking pixel to any email and see when it's opened."
+    />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <!-- Tells search engines what this site is (shown as a rich result). Data only: browsers never run it. -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "Seenly",
+        "description": "See when the emails you send get opened.",
+        "applicationCategory": "BusinessApplication",
+        "operatingSystem": "Any",
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+      }
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <noscript>
+      <p style="padding: 24px; font-family: system-ui, sans-serif; color: #f4efe6">
+        Seenly tells you when the emails you send get opened. Please turn on JavaScript to use it.
+      </p>
+    </noscript>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

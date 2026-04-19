@@ -1,0 +1,113 @@
+@import 'tailwindcss';
+
+/* Inter, self-hosted (latin subset, variable weight 400–700). SIL Open Font License. */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url('./assets/fonts/inter-latin.woff2') format('woff2');
+}
+
+/*
+ * Design tokens from the Mail Tracker design. Each one becomes a Tailwind class:
+ *   --color-surface  → bg-surface, border-surface, text-surface…
+ *   --radius-card    → rounded-card
+ */
+@theme {
+  --font-sans: Inter, system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+  /* Backgrounds */
+  --color-page: #0f0e0c;
+  --color-surface: #1a1815;
+  --color-surface-raised: #201d19;
+  --color-surface-hover: #24211c;
+  --color-surface-active: #2e2a23;
+
+  /* Borders */
+  --color-line: #2c2822;
+  --color-line-strong: #3a342b;
+  --color-line-hover: #463e33;
+  --color-divider: #24211c;
+
+  /* Text, from strongest to faintest */
+  --color-fg: #f4efe6;
+  --color-fg-soft: #d6cdbe;
+  --color-fg-muted: #b5ac9e;
+  --color-fg-faint: #958c7e;
+
+  /* Accent and status */
+  --color-accent: #e1b973;
+  --color-accent-light: #f6ddb0;
+  --color-link: #e8c88e;
+  --color-link-hover: #f1d29b;
+  --color-on-accent: #1a140a;
+  --color-opened: #e8c27e;
+  --color-success: #6fd3a6;
+  --color-pending: #6e665a;
+  --color-pending-line: #4a4338;
+  --color-danger: #f28b82;
+  --color-on-danger: #1a0f0e;
+
+  --radius-btn: 10px;
+  --radius-card: 14px;
+
+  --animate-slide-up: slide-up 0.2s ease-out;
+  --animate-toast-in: toast-in 0.25s ease-out;
+  --animate-pop-in: pop-in 0.12s ease-out;
+  @keyframes pop-in {
+    from {
+      transform: translateY(-4px) scale(0.98);
+      opacity: 0;
+    }
+  }
+  @keyframes toast-in {
+    from {
+      transform: translateY(120%);
+      opacity: 0;
+    }
+  }
+  @keyframes slide-up {
+    from {
+      transform: translateY(100%);
+    }
+  }
+}
+
+/* The design's dark background with a warm glow at the top. Used on the page and inside the phone frame. */
+@utility app-background {
+  background-color: var(--color-page);
+  background-image:
+    radial-gradient(120% 45% at 50% 0%, rgb(241 210 155 / 0.2), transparent 72%),
+    radial-gradient(80% 30% at 100% 100%, rgb(215 168 92 / 0.08), transparent 70%);
+}
+
+/* Page-wide defaults that would otherwise be repeated on every element */
+@layer base {
+  :root {
+    color-scheme: dark;
+
+    /* Phone frame shown around the app on screens wider than a phone (see AppLayout) */
+    --frame-width: 412px;
+    --frame-height: min(860px, calc(100dvh - 48px));
+    --frame-bezel: 10px;
+    --frame-radius: 48px;
+  }
+
+  body {
+    @apply min-h-dvh app-background font-sans text-sm text-fg antialiased;
+    background-attachment: fixed;
+  }
+
+  a {
+    @apply text-link hover:text-link-hover;
+  }
+
+  button:not(:disabled) {
+    @apply cursor-pointer;
+  }
+
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-accent;
+  }
+}
