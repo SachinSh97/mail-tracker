@@ -1,0 +1,62 @@
+// Shapes returned by the Mail Tracker service (see service/src/modules).
+// Dates arrive as ISO strings because they come through JSON.
+
+export interface Paginated<T> {
+  items: T[]
+  pagination: { limit: number; offset: number; total: number }
+}
+
+export interface User {
+  id: string
+  email: string
+  name: string | null
+}
+
+/** POST /auth/google: our own session, in exchange for a Google ID token */
+export interface SignInResponse {
+  sessionToken: string
+  expiresAt: string
+  user: User
+}
+
+export interface Collection {
+  id: string
+  name: string
+  description: string | null
+  trackerCount: number
+  openedCount: number
+  createdAt: string
+  updatedAt: string
+}
+
+export type TrackerStatus = 'opened' | 'not-opened'
+
+export interface Tracker {
+  id: string
+  name: string
+  emailSubject: string | null
+  recipientEmails: string[]
+  collection: { id: string; name: string } | null
+  status: TrackerStatus
+  openedAt: string | null
+  createdAt: string
+  pixel: { url: string; html: string }
+}
+
+export type HitOutcome =
+  'COUNTED_AS_OPEN' | 'ALREADY_OPENED' | 'IGNORED_GRACE_PERIOD' | 'IGNORED_OWNER' | 'IGNORED_BOT'
+
+export interface Hit {
+  id: string
+  outcome: HitOutcome
+  createdAt: string
+}
+
+export type TrackerDetails = Tracker & { hits: Hit[] }
+
+export interface CreateTrackerInput {
+  emailSubject?: string
+  recipientEmails?: string[]
+  collectionId?: string
+}
+

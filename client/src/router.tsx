@@ -1,4 +1,5 @@
 import { createBrowserRouter } from 'react-router-dom'
+import { RequireAuth } from './components/RequireAuth'
 import { ROUTES } from './constants/routes'
 import { AppLayout } from './layouts/AppLayout'
 import { ErrorScreen } from './screens/ErrorScreen'
@@ -14,10 +15,23 @@ export const router = createBrowserRouter([
     // Shown for the split second a lazy screen loads on a fresh page load
     HydrateFallback: () => null,
     children: [
+      // Public: Google sends the browser back here to finish signing in
       {
-        path: ROUTES.notFound,
+        path: ROUTES.authCallback,
         errorElement: <ErrorScreen />,
-        lazy: () => import('./screens/NotFoundScreen').then((m) => ({ Component: m.NotFoundScreen })),
+        lazy: () => import('./screens/AuthCallbackScreen').then((m) => ({ Component: m.AuthCallbackScreen })),
+      },
+      {
+        // Everything below needs a signed-in user
+        element: <RequireAuth />,
+        // A screen that crashes is replaced by a friendly message; the phone frame and toasts stay
+        errorElement: <ErrorScreen />,
+        children: [
+          {
+            path: ROUTES.notFound,
+            lazy: () => import('./screens/NotFoundScreen').then((m) => ({ Component: m.NotFoundScreen })),
+          },
+        ],
       },
     ],
   },
