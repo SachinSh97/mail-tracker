@@ -3,9 +3,12 @@ import { RequireAuth } from './components/RequireAuth'
 import { ROUTES } from './constants/routes'
 import { AppLayout } from './layouts/AppLayout'
 import { ErrorScreen } from './screens/ErrorScreen'
+import { HomeScreen } from './screens/HomeScreen'
 
-// Every screen is downloaded the first time it's opened (`lazy`), which keeps the first load small.
-// The router waits for the code before switching screens, so there's no loading flash.
+// Home (and the sign-in screen inside RequireAuth) are where almost every visit starts,
+// so they ship in the main bundle. Every other screen is downloaded the first time it's opened
+// (`lazy`), which keeps the first load small. The router waits for the code before switching
+// screens, so there's no loading flash.
 export const router = createBrowserRouter([
   {
     // Page frame for the whole app
@@ -27,6 +30,7 @@ export const router = createBrowserRouter([
         // A screen that crashes is replaced by a friendly message; the phone frame and toasts stay
         errorElement: <ErrorScreen />,
         children: [
+          { path: ROUTES.home, element: <HomeScreen /> },
           {
             path: ROUTES.notFound,
             lazy: () => import('./screens/NotFoundScreen').then((m) => ({ Component: m.NotFoundScreen })),
