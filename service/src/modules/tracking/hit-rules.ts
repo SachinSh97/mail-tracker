@@ -9,11 +9,7 @@
 //   5. Otherwise            → MAY_COUNT_AS_OPEN     (the first one of these opens the tracker)
 
 export type HitClassification =
-  | 'NOT_RECORDED'
-  | 'IGNORED_BOT'
-  | 'IGNORED_OWNER'
-  | 'IGNORED_GRACE_PERIOD'
-  | 'MAY_COUNT_AS_OPEN'
+  'NOT_RECORDED' | 'IGNORED_BOT' | 'IGNORED_OWNER' | 'IGNORED_GRACE_PERIOD' | 'MAY_COUNT_AS_OPEN'
 
 export interface HitContext {
   method: string
