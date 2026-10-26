@@ -1,20 +1,21 @@
-// Who is signed in. Kept in localStorage so a reload doesn't sign you out.
-// React components read it through the useSession() hook.
+// Who is signed in, for showing it in the UI. React components read it through the useSession() hook.
 //
-// The session token lives in localStorage, which any script on this page can read. That is acceptable
-// here because the app loads no third-party scripts and production builds ship a strict CSP
-// (see vite.config.ts). Don't add external scripts without revisiting this.
+// The real credential is NOT here: the service keeps the session in an HttpOnly cookie, which page
+// scripts can't read and the browser sends by itself. This file only remembers the user's email, name
+// and when the session ends, so a reload shows the right screen straight away. If the cookie has
+// expired or was removed, the next API call returns 401 and this is cleared (see http.ts).
 
 export interface Session {
-  /** Our own token from the service (not Google's), sent as "Authorization: Bearer …" */
-  token: string
-  /** ISO date; after this the service rejects the token */
+  /** ISO date; after this the service no longer accepts the session cookie */
   expiresAt: string
   email: string
   name: string | null
 }
 
-const STORAGE_KEY = 'mail-tracker:session'
+const STORAGE_KEY = 'mail-tracker:user'
+
+// Older versions kept the session token itself under this key. Remove it wherever it's still there.
+localStorage.removeItem('mail-tracker:session')
 const listeners = new Set<() => void>()
 
 // useSyncExternalStore needs the same object back while nothing changed, so we cache the parse
@@ -25,10 +26,7 @@ function parseSession(raw: string | null): Session | null {
   if (!raw) return null
   try {
     const value = JSON.parse(raw)
-    const isValid =
-      typeof value?.token === 'string' &&
-      typeof value?.email === 'string' &&
-      typeof value?.expiresAt === 'string'
+    const isValid = typeof value?.email === 'string' && typeof value?.expiresAt === 'string'
     return isValid ? value : null
   } catch {
     return null

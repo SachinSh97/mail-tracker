@@ -12,11 +12,10 @@ export interface User {
   name: string | null
 }
 
-/** POST /auth/google: our own session, in exchange for a Google ID token */
+/** POST /auth/google: who signed in. The session itself arrives as an HttpOnly cookie. */
 export interface SignInResponse {
-  sessionToken: string
-  expiresAt: string
   user: User
+  expiresAt: string
 }
 
 export interface Collection {

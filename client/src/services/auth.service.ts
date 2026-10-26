@@ -9,7 +9,7 @@ import type { SignInResponse } from './types'
 //   1. startGoogleSignIn()     we send the browser to Google's sign-in page
 //   2. Google sends it back to /auth/callback#id_token=…   (an ID token: "this is sachin@gmail.com")
 //   3. completeGoogleSignIn()  we give that ID token to our service, which checks it with Google
-//                              and returns our OWN session token, valid for weeks
+//                              and sets our OWN session as an HttpOnly cookie, valid for weeks
 //
 // `state` and `nonce` are random values we make up in step 1 and check in step 3. They prove the
 // response is for a sign-in this tab started (not a forged link, not a replayed old token).
@@ -92,8 +92,13 @@ export const authService = {
     return completing
   },
 
-  signOut(): void {
-    session.clear()
+  /** Asks the service to delete the session cookie, then forgets the user here. */
+  async signOut(): Promise<void> {
+    try {
+      await request<void>('/auth/logout', { method: 'POST' })
+    } finally {
+      session.clear() // sign out on this device even if the server can't be reached
+    }
   },
 }
 
@@ -113,8 +118,8 @@ async function finishSignIn(urlFragment: string): Promise<string> {
   }
 
   const result = await request<SignInResponse>('/auth/google', { method: 'POST', body: { idToken } })
+  // The service has set the session cookie; we only remember who signed in
   session.save({
-    token: result.sessionToken,
     expiresAt: result.expiresAt,
     email: result.user.email,
     name: result.user.name,

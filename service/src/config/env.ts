@@ -28,6 +28,18 @@ const envSchema = z.object({
     .min(32, { message: 'must be at least 32 characters' }),
   // How many days you stay signed in
   SESSION_TTL_DAYS: z.coerce.number().int().min(1).max(365).default(30),
+
+  // Other websites allowed to call the API with the session cookie, comma-separated
+  // (e.g. https://mail-tracker.onrender.com). Leave empty when the web app is served from the same site.
+  CORS_ORIGINS: z
+    .string()
+    .default('')
+    .transform((value) =>
+      value
+        .split(',')
+        .map((origin) => origin.trim().replace(/\/+$/, ''))
+        .filter(Boolean),
+    ),
 })
 
 export type Env = z.infer<typeof envSchema>

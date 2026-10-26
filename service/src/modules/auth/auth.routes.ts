@@ -11,6 +11,7 @@ publicAuthRouter.post(
   rateLimit({ windowMs: 60_000, limit: 20, standardHeaders: 'draft-8', legacyHeaders: false }),
   authController.signInWithGoogle,
 )
+publicAuthRouter.post('/auth/logout', authController.signOut)
 
 // Needs a signed-in user (mounted after `authenticate`)
 export const authRouter = Router()

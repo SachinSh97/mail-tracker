@@ -1,7 +1,9 @@
+import cookieParser from 'cookie-parser'
 import cors from 'cors'
 import express, { type Express } from 'express'
 import helmet from 'helmet'
 import { pinoHttp } from 'pino-http'
+import { env } from './config/env.js'
 import { errorHandler } from './middlewares/error-handler.js'
 import { notFoundHandler } from './middlewares/not-found-handler.js'
 import { healthRouter } from './modules/health/health.routes.js'
@@ -44,7 +46,10 @@ export function createApp(): Express {
       crossOriginResourcePolicy: { policy: 'cross-origin' },
     }),
   )
-  app.use(cors()) // allow calls from any future frontend
+  // The web app normally calls the API from the same site (Vite's proxy in development), which needs no CORS.
+  // Origins listed in CORS_ORIGINS may also call it, with cookies. Every other website is refused.
+  app.use(cors({ origin: env.CORS_ORIGINS, credentials: true }))
+  app.use(cookieParser()) // reads the session cookie into req.cookies
   app.use(express.json({ limit: '100kb' })) // parse JSON bodies
 
   // --- Routes ---

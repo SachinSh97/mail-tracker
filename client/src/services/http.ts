@@ -22,17 +22,17 @@ interface RequestOptions {
 }
 
 export async function request<T>(path: string, options: RequestOptions = {}): Promise<T> {
-  const token = session.get()?.token
+  const isSignedIn = session.get() !== null
   const hasBody = options.body !== undefined
 
   let response: Response
   try {
     response = await fetch(`${BASE_URL}/api/v1${path}`, {
       method: options.method ?? 'GET',
-      headers: {
-        ...(token && { Authorization: `Bearer ${token}` }),
-        ...(hasBody && { 'Content-Type': 'application/json' }),
-      },
+      // The session cookie is HttpOnly: the browser attaches it, this code never sees it.
+      // 'include' also sends it when VITE_API_URL points at another site (that site must allow us in CORS_ORIGINS).
+      credentials: 'include',
+      headers: hasBody ? { 'Content-Type': 'application/json' } : undefined,
       body: hasBody ? JSON.stringify(options.body) : undefined,
       signal: options.signal,
     })
@@ -42,7 +42,7 @@ export async function request<T>(path: string, options: RequestOptions = {}): Pr
   }
 
   // The session expired or was revoked: send the user back to sign in
-  if (response.status === 401 && token) session.clear()
+  if (response.status === 401 && isSignedIn) session.clear()
 
   if (response.status === 204) return undefined as T
   const data = await response.json().catch(() => null)

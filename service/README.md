@@ -65,7 +65,7 @@ service/
    ├─ routes/                /api/v1 router (adds authentication)
    ├─ middlewares/           authenticate, error handler, 404 handler
    ├─ modules/               one folder per feature (routes → controller → service → repository)
-   │  ├─ auth/               Google sign-in, session tokens, GET /api/v1/me
+   │  ├─ auth/               Google sign-in, session cookie, GET /api/v1/me
    │  ├─ users/              find-or-create the user on sign-in
    │  ├─ health/             GET /health
    │  ├─ collections/        optional groups of trackers
@@ -85,11 +85,12 @@ and accept `?limit=` (1–100, default 20) and `?offset=`.
 
 **General**
 
-| Method | Path                  | Description                                      |
-| ------ | --------------------- | ------------------------------------------------ |
-| GET    | `/health`             | Public. `200` if healthy, `503` if DB down       |
-| POST   | `/api/v1/auth/google` | Public. `{ idToken }` → session token (see Auth) |
-| GET    | `/api/v1/me`          | Who you are: `{ id, email, name }`               |
+| Method | Path                  | Description                                                |
+| ------ | --------------------- | ---------------------------------------------------------- |
+| GET    | `/health`             | Public. `200` if healthy, `503` if DB down                 |
+| POST   | `/api/v1/auth/google` | Public. `{ idToken }` → sets the session cookie (see Auth) |
+| POST   | `/api/v1/auth/logout` | Public. Deletes the session cookie                         |
+| GET    | `/api/v1/me`          | Who you are: `{ id, email, name }`                         |
 
 **Collections** — optional groups, e.g. one per company
 
@@ -147,14 +148,20 @@ Users sign in with Google. There is no sign-up and no password: the first sign-i
 Web app: "Sign in with Google" → Google ID token (valid 1 hour)
    └─ POST /api/v1/auth/google { idToken }        (public)
         service checks the token is from Google, for our GOOGLE_CLIENT_ID, email verified
-   ◄─ { sessionToken, expiresAt, user: { id, email, name } }   (our own token, valid SESSION_TTL_DAYS)
-Every other /api/v1 request:  Authorization: Bearer <sessionToken>
+   ◄─ Set-Cookie: session=<token>; HttpOnly; SameSite=Lax; Secure (production)   (valid SESSION_TTL_DAYS)
+      body: { user: { id, email, name }, expiresAt }   (the token is never in a response body)
+Every other /api/v1 request: the browser sends the cookie by itself
+POST /api/v1/auth/logout → deletes the cookie
 ```
 
 - **Users:** the first sign-in creates a row in `users`. Returning users are recognised by their Google ID
   (`google_id`, which never changes even if their Gmail address does); email and name are refreshed each time.
-- **Session token:** a JWT signed with `SESSION_SECRET` that carries the user's ID. Changing `SESSION_SECRET`
-  signs everyone out. Each request also checks the user still exists.
+- **Session cookie:** holds a JWT signed with `SESSION_SECRET` that carries the user's ID. It's `HttpOnly`
+  (scripts can't read it), `SameSite=Lax` (other sites can't send it with their POST/PATCH/DELETE requests),
+  and `Secure` with the `__Host-` prefix in production. Changing `SESSION_SECRET` signs everyone out.
+  Each request also checks the user still exists.
+- **CORS:** off by default, since the web app calls the API from the same site. Origins in `CORS_ORIGINS` may call
+  it with cookies; every other website is refused.
 - **Ownership:** every collection and tracker has a `user_id`, and every query filters by it, so users only
   ever see their own data. Deleting a user deletes all their collections, trackers and hits.
 

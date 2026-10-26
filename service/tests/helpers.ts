@@ -1,6 +1,7 @@
 import request from 'supertest'
 import { createApp } from '../src/app.js'
 import { prisma } from '../src/database/prisma-client.js'
+import { SESSION_COOKIE } from '../src/modules/auth/session-cookie.js'
 import { createSessionToken } from '../src/modules/auth/session-token.js'
 import { generateTrackerId } from '../src/modules/trackers/tracker-id.js'
 import { OTHER_USER, OWNER } from './setup/test-users.js'
@@ -12,9 +13,12 @@ const app = createApp()
 /** Send a request to the app, e.g. `api().get('/health')` */
 export const api = () => request(app)
 
-/** Auth header of the signed-in user (a real session token): `.set(asOwner)` */
+/** The session cookie a browser would send, e.g. `.set(withSessionCookie(token))` */
+export const withSessionCookie = (token: string) => ({ Cookie: `${SESSION_COOKIE}=${token}` })
+
+/** Request headers of the signed-in user (a real session cookie): `.set(asOwner)` */
 const ownerSession = await createSessionToken(OWNER.id)
-export const asOwner = { Authorization: `Bearer ${ownerSession.token}` }
+export const asOwner = withSessionCookie(ownerSession.token)
 
 /** Empty every table, then add the two test users, so each test starts from the same state. */
 export async function resetDatabase(): Promise<void> {
