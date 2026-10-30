@@ -1,6 +1,7 @@
 import { env } from '../../config/env.js'
 import type { HitOutcome } from '../../generated/prisma/client.js'
 import { logger } from '../../shared/logger.js'
+import * as liveEventsBus from '../live-events/live-events.bus.js'
 import { TRACKER_ID_PATTERN } from '../trackers/tracker-id.js'
 import { classifyHit } from './hit-rules.js'
 import * as trackingRepository from './tracking.repository.js'
@@ -41,16 +42,23 @@ export async function recordPixelHit(trackerId: string, visitor: Visitor): Promi
       ipAddress: visitor.ip ?? null,
       userAgent: visitor.userAgent?.slice(0, MAX_USER_AGENT_LENGTH) ?? null,
     }
-    const outcome =
-      classification === 'MAY_COUNT_AS_OPEN'
-        ? await trackingRepository.saveOpenCandidateHit(hit)
-        : await trackingRepository.saveIgnoredHit(hit, classification)
-
-    if (outcome === 'COUNTED_AS_OPEN') {
-      logger.info({ trackerId }, `📬 Tracker ${trackerId} opened`)
-      // Next part: publish a live event here (SSE)
+    if (classification !== 'MAY_COUNT_AS_OPEN') {
+      return await trackingRepository.saveIgnoredHit(hit, classification)
     }
-    return outcome
+
+    // A real open (the first one, or the email opened again): tell the owner's open tabs right away
+    const saved = await trackingRepository.saveOpenCandidateHit(hit)
+    const firstOpen = saved.outcome === 'COUNTED_AS_OPEN'
+    if (firstOpen) logger.info({ trackerId }, `📬 Tracker ${trackerId} opened`)
+
+    liveEventsBus.publish(tracker.userId, {
+      type: 'tracker-opened',
+      trackerId,
+      notificationId: saved.id,
+      firstOpen,
+      openedAt: saved.createdAt.toISOString(),
+    })
+    return saved.outcome
   } catch (error) {
     logger.error({ err: error, trackerId }, 'Failed to record pixel hit')
     return null

@@ -5,7 +5,7 @@ import type { HitOutcome } from '../../generated/prisma/client.js'
 export function findTrackerForHit(trackerId: string) {
   return prisma.tracker.findUnique({
     where: { id: trackerId },
-    select: { id: true, creatorIp: true, createdAt: true },
+    select: { id: true, userId: true, creatorIp: true, createdAt: true },
   })
 }
 
@@ -21,13 +21,19 @@ export async function saveIgnoredHit(hit: NewHit, outcome: HitOutcome): Promise<
   return outcome
 }
 
+export interface SavedOpenHit {
+  id: string
+  outcome: HitOutcome
+  createdAt: Date
+}
+
 /**
  * Tries to mark the tracker as opened, then saves the hit.
  *
  * "Only once" is guaranteed by the database: the UPDATE only matches while opened_at is still
  * empty, so if two hits arrive at the same moment, exactly one of them changes the row.
  */
-export function saveOpenCandidateHit(hit: NewHit): Promise<HitOutcome> {
+export function saveOpenCandidateHit(hit: NewHit): Promise<SavedOpenHit> {
   return prisma.$transaction(async (tx) => {
     const { count } = await tx.tracker.updateMany({
       where: { id: hit.trackerId, openedAt: null },
@@ -35,7 +41,6 @@ export function saveOpenCandidateHit(hit: NewHit): Promise<HitOutcome> {
     })
     const outcome: HitOutcome = count === 1 ? 'COUNTED_AS_OPEN' : 'ALREADY_OPENED'
 
-    await tx.hit.create({ data: { ...hit, outcome } })
-    return outcome
+    return tx.hit.create({ data: { ...hit, outcome }, select: { id: true, outcome: true, createdAt: true } })
   })
 }
