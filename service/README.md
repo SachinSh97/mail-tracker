@@ -116,6 +116,28 @@ Every tracker response includes `pixel.html`, the exact `<img>` tag to insert in
 
 Someone else's collection or tracker returns `404`, exactly like one that doesn't exist.
 
+**Notifications**: one per real open of your emails (the first open, or opened again), newest first
+
+| Method | Path                                 | Notes                                                                              |
+| ------ | ------------------------------------ | ---------------------------------------------------------------------------------- |
+| GET    | `/api/v1/notifications`              | `?limit&offset`. Each item: `{ id, firstOpen, createdAt, unread, tracker: { … } }` |
+| GET    | `/api/v1/notifications/unread-count` | `{ count }`: opens since you last looked (the number on the bell)                  |
+| POST   | `/api/v1/notifications/seen`         | `{ seenUntil }`: marks everything up to that time as read (never moves backwards)  |
+
+They come straight from the `hits` table (no separate table), so deleting a tracker removes its notifications.
+"Unread" means opened after `users.notifications_seen_at`.
+
+**Live events**: `GET /api/v1/live-events` is a Server-Sent Events stream (signed in by the session cookie).
+Each open of one of your emails sends:
+
+```
+event: tracker-opened
+data: {"type":"tracker-opened","trackerId":"…","notificationId":"…","firstOpen":true,"openedAt":"…"}
+```
+
+A comment line is sent every 25 s so proxies keep the connection open. Events are passed around in memory
+(`modules/live-events/live-events.bus.ts`), which is correct while the service runs as a single instance.
+
 **Public pixel** — this URL goes inside the email, no auth
 
 | Method | Path                      | Returns                                                                           |

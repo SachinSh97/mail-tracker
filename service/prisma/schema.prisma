@@ -33,16 +33,18 @@ enum HitOutcome {
 
 /// Someone who signed in with Google. Created on their first sign-in, no sign-up step.
 model User {
-  id           String   @id @default(uuid())
+  id                  String    @id @default(uuid())
   /// Google's ID for the account ("sub"). Never changes, even if the Gmail address does,
   /// so this is how we recognise a returning user.
-  googleId     String   @unique @map("google_id")
+  googleId            String    @unique @map("google_id")
   /// Current Google email, lowercase. Refreshed on every sign-in.
-  email        String
+  email               String
   /// Display name from Google, e.g. "Sachin Sharma"
-  name         String?
-  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
-  lastSignInAt DateTime @default(now()) @map("last_sign_in_at") @db.Timestamptz(3)
+  name                String?
+  createdAt           DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  lastSignInAt        DateTime  @default(now()) @map("last_sign_in_at") @db.Timestamptz(3)
+  /// When they last looked at their notifications. Opens after this are "unread". Empty until the first look.
+  notificationsSeenAt DateTime? @map("notifications_seen_at") @db.Timestamptz(3)
 
   collections Collection[]
   trackers    Tracker[]
