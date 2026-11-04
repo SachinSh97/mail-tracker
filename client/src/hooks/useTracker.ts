@@ -2,6 +2,7 @@ import { NO_COLLECTION_ID, NO_COLLECTION_NAME } from '../constants/collections'
 import { paths } from '../constants/routes'
 import { trackersService } from '../services/trackers.service'
 import type { Hit, TrackerDetails } from '../services/types'
+import { useLiveEvent } from './useLiveEvents'
 import { useQuery } from './useQuery'
 
 // The service sends at most this many recent hits with a tracker
@@ -39,6 +40,11 @@ export function useTracker(trackerId: string) {
   const { data: tracker, ...query } = useQuery(`tracker:${trackerId}`, (signal) =>
     trackersService.get(trackerId, signal),
   )
+
+  // Live: when this email is opened while it's on screen, show the new status straight away
+  useLiveEvent((event) => {
+    if (event.type === 'reconnected' || event.trackerId === trackerId) query.reload()
+  })
 
   return {
     ...query,

@@ -9,6 +9,7 @@ export const ROUTES = {
   /** :collectionId can be "none" = trackers that aren't in any collection */
   collection: '/collections/:collectionId',
   tracker: '/trackers/:trackerId',
+  notifications: '/notifications',
   /** Google sends the browser back here after sign-in. Must be listed in Google Cloud Console. */
   authCallback: '/auth/callback',
   notFound: '*',
@@ -23,4 +24,6 @@ export const paths = {
   collection: (collectionId: string) => `/collections/${encodeURIComponent(collectionId)}`,
 
   tracker: (trackerId: string) => `/trackers/${encodeURIComponent(trackerId)}`,
+
+  notifications: () => ROUTES.notifications,
 }

@@ -59,3 +59,22 @@ export interface CreateTrackerInput {
   collectionId?: string
 }
 
+/** One real open of one of your emails (GET /notifications) */
+export interface Notification {
+  id: string
+  /** true the first time the email was opened, false when it was opened again */
+  firstOpen: boolean
+  createdAt: string
+  /** Opened after you last looked at your notifications */
+  unread: boolean
+  tracker: Pick<Tracker, 'id' | 'name' | 'emailSubject' | 'recipientEmails' | 'collection'>
+}
+
+/** Pushed by the service over GET /live-events the moment one of your emails is opened */
+export interface TrackerOpenedEvent {
+  type: 'tracker-opened'
+  trackerId: string
+  notificationId: string
+  firstOpen: boolean
+  openedAt: string
+}

@@ -5,10 +5,11 @@ import { Icon } from '../components/Icon'
 import { ErrorState, Placeholder, Skeleton } from '../components/LoadState'
 import { useCollectionsOverview } from '../hooks/useCollectionsOverview'
 import { useDocumentTitle } from '../hooks/useDocumentTitle'
+import { useUnreadCount } from '../hooks/useLiveEvents'
 import { useSession } from '../hooks/useSession'
 import { NO_COLLECTION_ID, NO_COLLECTION_NAME } from '../constants/collections'
 import { formatCount } from '../utils/format'
-import { buttonClass, iconButton, screen } from '../utils/ui'
+import { buttonClass, cn, iconButton, screen } from '../utils/ui'
 import { authService } from '../services/auth.service'
 
 export function HomeScreen() {
@@ -24,6 +25,7 @@ export function HomeScreen() {
           <span className="text-base font-semibold tracking-[-0.01em]">Seenly</span>
         </span>
         <div className="flex items-center">
+          <NotificationsBell />
           <button
             type="button"
             className={iconButton}
@@ -113,3 +115,22 @@ function CollectionCard({ to, name, trackerCount, openedCount }: CollectionCardP
   )
 }
 
+/** Bell in the header: opens the notifications, with a badge showing how many are new */
+function NotificationsBell() {
+  const unread = useUnreadCount()
+  const label = unread > 0 ? `Notifications, ${unread} new` : 'Notifications'
+
+  return (
+    <Link to={paths.notifications()} className={cn(iconButton, 'relative')} aria-label={label} title={label}>
+      <Icon name="bell" />
+      {unread > 0 && (
+        <span
+          aria-hidden="true"
+          className="absolute top-1.5 right-1 flex h-4.5 min-w-4.5 items-center justify-center rounded-full bg-danger px-1 text-[10px] leading-none font-bold text-on-danger ring-2 ring-page"
+        >
+          {unread > 99 ? '99+' : unread}
+        </span>
+      )}
+    </Link>
+  )
+}

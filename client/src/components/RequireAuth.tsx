@@ -1,4 +1,5 @@
 import { Outlet, useLocation } from 'react-router-dom'
+import { useLiveConnection } from '../hooks/useLiveEvents'
 import { useSession } from '../hooks/useSession'
 import { LoginScreen } from '../screens/LoginScreen'
 
@@ -12,7 +13,18 @@ export function RequireAuth() {
 
   if (!session) return <LoginScreen />
 
-  // key: a new URL path (e.g. another tracker) is a fresh screen, so menus and dialogs reset.
-  // Query changes like ?show=opened keep the same screen.
-  return <Outlet key={pathname} />
+  return (
+    <>
+      <LiveConnection />
+      {/* key: a new URL path (e.g. another tracker) is a fresh screen, so menus and dialogs reset.
+          Query changes like ?show=opened keep the same screen. */}
+      <Outlet key={pathname} />
+    </>
+  )
+}
+
+/** Live updates (opens, unread count) for as long as someone is signed in. Renders nothing. */
+function LiveConnection() {
+  useLiveConnection()
+  return null
 }

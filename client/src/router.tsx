@@ -44,6 +44,11 @@ export const router = createBrowserRouter([
             lazy: () => import('./screens/TrackerScreen').then((m) => ({ Component: m.TrackerScreen })),
           },
           {
+            path: ROUTES.notifications,
+            lazy: () =>
+              import('./screens/NotificationsScreen').then((m) => ({ Component: m.NotificationsScreen })),
+          },
+          {
             path: ROUTES.notFound,
             lazy: () => import('./screens/NotFoundScreen').then((m) => ({ Component: m.NotFoundScreen })),
           },
