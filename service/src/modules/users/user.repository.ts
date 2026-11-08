@@ -18,10 +18,16 @@ export function upsertGoogleUser(account: GoogleAccount) {
     where: { googleId: account.googleId },
     create: { ...account, lastSignInAt: now },
     update: { email: account.email, name: account.name, lastSignInAt: now },
-    select: userFields,
+    select: { ...userFields, sessionVersion: true },
   })
 }
 
-export function findUserById(userId: string) {
-  return prisma.user.findUnique({ where: { id: userId }, select: userFields })
+/** The user plus their current session version, to check a session token against */
+export function findUserForSession(userId: string) {
+  return prisma.user.findUnique({ where: { id: userId }, select: { ...userFields, sessionVersion: true } })
+}
+
+/** Signs the user out everywhere: every session token issued so far stops working. */
+export async function endAllSessions(userId: string): Promise<void> {
+  await prisma.user.updateMany({ where: { id: userId }, data: { sessionVersion: { increment: 1 } } })
 }

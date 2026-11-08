@@ -17,7 +17,7 @@ export const api = () => request(app)
 export const withSessionCookie = (token: string) => ({ Cookie: `${SESSION_COOKIE}=${token}` })
 
 /** Request headers of the signed-in user (a real session cookie): `.set(asOwner)` */
-const ownerSession = await createSessionToken(OWNER.id)
+const ownerSession = await createSessionToken({ id: OWNER.id, sessionVersion: 0 })
 export const asOwner = withSessionCookie(ownerSession.token)
 
 /** Empty every table, then add the two test users, so each test starts from the same state. */

@@ -30,6 +30,12 @@ function sessionCookieFrom(res: { headers: Record<string, unknown> }): string | 
 /** Just the token inside a Set-Cookie value */
 const tokenFrom = (setCookie: string) => setCookie.split(';')[0]!.slice(SESSION_COOKIE.length + 1)
 
+/** Signs the owner in and returns the cookie header their browser would send next */
+async function signInOwner() {
+  const res = await signInWithGoogle({ idToken: OWNER_GOOGLE_TOKEN })
+  return withSessionCookie(tokenFrom(sessionCookieFrom(res) ?? ''))
+}
+
 /** A session token like ours, but with a chosen secret / user / expiry, to test that bad ones are refused */
 const makeSessionToken = ({
   secret = TEST_SESSION_SECRET,
@@ -123,6 +129,42 @@ describe('Sign out', () => {
   })
 })
 
+describe('Sign out ends the session on the server', () => {
+  it('makes a copied session cookie stop working', async () => {
+    const stolen = await signInOwner()
+    expect((await api().get('/api/v1/me').set(stolen)).status).toBe(200)
+
+    await api().post('/api/v1/auth/logout').set(stolen)
+
+    const res = await api().get('/api/v1/me').set(stolen)
+    expect(res.status).toBe(401)
+    expect(res.body.error.message).toBe('You were signed out. Please sign in again.')
+  })
+
+  it('signs out every device of that user', async () => {
+    const laptop = await signInOwner()
+    const phone = await signInOwner()
+
+    await api().post('/api/v1/auth/logout').set(laptop)
+
+    expect((await api().get('/api/v1/me').set(phone)).status).toBe(401)
+  })
+
+  it('lets the user sign in again afterwards', async () => {
+    await api().post('/api/v1/auth/logout').set(asOwner)
+    const again = await signInOwner()
+
+    expect((await api().get('/api/v1/me').set(again)).status).toBe(200)
+  })
+
+  it("doesn't affect anyone else", async () => {
+    await signInWithGoogle({ idToken: NEW_USER_GOOGLE_TOKEN })
+    await api().post('/api/v1/auth/logout').set(asOwner)
+    const newcomer = await prisma.user.findFirstOrThrow({ where: { googleId: NEW_USER.googleId } })
+    expect(newcomer.sessionVersion).toBe(0)
+  })
+})
+
 describe('Protected routes', () => {
   it('reject requests without the session cookie', async () => {
     const res = await api().get('/api/v1/me')
@@ -203,3 +245,4 @@ describe('Deleting a user', () => {
     expect(await prisma.hit.count()).toBe(0)
   })
 })
+

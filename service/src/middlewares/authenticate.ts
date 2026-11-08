@@ -2,7 +2,7 @@ import type { Request, Response, NextFunction } from 'express'
 import type { AuthenticatedUser } from '../modules/auth/auth.types.js'
 import { readSessionCookie } from '../modules/auth/session-cookie.js'
 import { readSessionToken } from '../modules/auth/session-token.js'
-import { findUserById } from '../modules/users/user.repository.js'
+import { findUserForSession } from '../modules/users/user.repository.js'
 import { UnauthorizedError } from '../shared/http-errors.js'
 
 // Protects /api routes. Expects the HttpOnly session cookie that POST /api/v1/auth/google sets
@@ -12,14 +12,19 @@ export async function authenticate(req: Request, _res: Response, next: NextFunct
   const token = readSessionCookie(req)
   if (!token) throw new UnauthorizedError('Please sign in')
 
-  const userId = await readSessionToken(token)
-  if (!userId) throw new UnauthorizedError('Your session has expired. Please sign in again.')
+  const claims = await readSessionToken(token)
+  if (!claims) throw new UnauthorizedError('Your session has expired. Please sign in again.')
 
   // The token is genuine, but the user may have been deleted since it was issued
-  const user = await findUserById(userId)
+  const user = await findUserForSession(claims.userId)
   if (!user) throw new UnauthorizedError('Your account no longer exists. Please sign in again.')
 
-  req.user = user
+  // ...or they've signed out since, which ends every session issued before
+  if (user.sessionVersion !== claims.sessionVersion) {
+    throw new UnauthorizedError('You were signed out. Please sign in again.')
+  }
+
+  req.user = { id: user.id, email: user.email, name: user.name }
   next()
 }
 

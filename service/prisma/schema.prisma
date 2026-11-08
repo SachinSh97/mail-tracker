@@ -45,6 +45,8 @@ model User {
   lastSignInAt        DateTime  @default(now()) @map("last_sign_in_at") @db.Timestamptz(3)
   /// When they last looked at their notifications. Opens after this are "unread". Empty until the first look.
   notificationsSeenAt DateTime? @map("notifications_seen_at") @db.Timestamptz(3)
+  /// Goes into every session token. Signing out adds 1, which makes all earlier tokens invalid at once.
+  sessionVersion      Int       @default(0) @map("session_version")
 
   collections Collection[]
   trackers    Tracker[]

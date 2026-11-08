@@ -3,8 +3,11 @@ import { env } from '../../config/env.js'
 
 // After a Google sign-in we hand out our OWN token, so the user stays signed in for weeks
 // (Google's token only lasts an hour). It's a JWT signed with SESSION_SECRET:
-// nobody can create or change one without the secret. It only carries the user's ID;
-// `authenticate` loads the rest from the users table. Changing SESSION_SECRET signs everyone out.
+// nobody can create or change one without the secret.
+//
+// It carries the user's ID and their session version (`ver`). Signing out adds 1 to the version
+// stored on the user, so every token issued before that stops working at once, even copies.
+// Changing SESSION_SECRET signs everyone out.
 const secret = new TextEncoder().encode(env.SESSION_SECRET)
 const ISSUER = 'mail-tracker'
 const ALGORITHM = 'HS256'
@@ -14,12 +17,20 @@ export interface SessionToken {
   expiresAt: Date
 }
 
-export async function createSessionToken(userId: string): Promise<SessionToken> {
+export interface SessionClaims {
+  userId: string
+  sessionVersion: number
+}
+
+export async function createSessionToken(user: {
+  id: string
+  sessionVersion: number
+}): Promise<SessionToken> {
   const expiresAt = new Date(Date.now() + env.SESSION_TTL_DAYS * 24 * 60 * 60 * 1000)
-  const token = await new SignJWT()
+  const token = await new SignJWT({ ver: user.sessionVersion })
     .setProtectedHeader({ alg: ALGORITHM })
     .setIssuer(ISSUER)
-    .setSubject(userId)
+    .setSubject(user.id)
     .setIssuedAt()
     .setExpirationTime(expiresAt)
     .sign(secret)
@@ -27,11 +38,12 @@ export async function createSessionToken(userId: string): Promise<SessionToken> 
   return { token, expiresAt }
 }
 
-/** Returns the user ID inside a valid session token, or null if it's fake, changed or expired. */
-export async function readSessionToken(token: string): Promise<string | null> {
+/** What's inside a valid session token, or null if it's fake, changed or expired. */
+export async function readSessionToken(token: string): Promise<SessionClaims | null> {
   try {
     const { payload } = await jwtVerify(token, secret, { issuer: ISSUER, algorithms: [ALGORITHM] })
-    return payload.sub ?? null
+    if (!payload.sub || typeof payload.ver !== 'number') return null
+    return { userId: payload.sub, sessionVersion: payload.ver }
   } catch {
     return null
   }
