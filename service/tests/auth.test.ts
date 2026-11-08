@@ -246,3 +246,41 @@ describe('Deleting a user', () => {
   })
 })
 
+describe('Changes requested by other websites (Origin check)', () => {
+  const createCollection = (origin?: string) => {
+    const req = api().post('/api/v1/collections').set(asOwner)
+    return (origin ? req.set('Origin', origin) : req).send({ name: 'Test' })
+  }
+
+  it('are refused with 403, even with a valid session cookie', async () => {
+    const res = await createCollection('https://evil.example')
+    expect(res.status).toBe(403)
+    expect(await prisma.collection.count()).toBe(0)
+  })
+
+  it('also covers sign-out, so another site can’t sign the user out', async () => {
+    const res = await api().post('/api/v1/auth/logout').set(asOwner).set('Origin', 'https://evil.example')
+    expect(res.status).toBe(403)
+    expect((await api().get('/api/v1/me').set(asOwner)).status).toBe(200)
+  })
+
+  it('are allowed from the service’s own address (the web app through a proxy)', async () => {
+    const res = await api()
+      .post('/api/v1/collections')
+      .set(asOwner)
+      .set('Host', 'app.test')
+      .set('Origin', 'http://app.test')
+      .send({ name: 'Test' })
+    expect(res.status).toBe(201)
+  })
+
+  it('are allowed without an Origin (not from a web page, e.g. curl)', async () => {
+    expect((await createCollection()).status).toBe(201)
+  })
+
+  it('never block reading', async () => {
+    expect((await api().get('/api/v1/me').set(asOwner).set('Origin', 'https://evil.example')).status).toBe(
+      200,
+    )
+  })
+})

@@ -6,6 +6,7 @@ import { pinoHttp } from 'pino-http'
 import { env } from './config/env.js'
 import { errorHandler } from './middlewares/error-handler.js'
 import { notFoundHandler } from './middlewares/not-found-handler.js'
+import { rejectCrossSiteWrites } from './middlewares/reject-cross-site-writes.js'
 import { healthRouter } from './modules/health/health.routes.js'
 import { trackingRouter } from './modules/tracking/tracking.routes.js'
 import { apiV1Router } from './routes/api-v1.routes.js'
@@ -54,7 +55,7 @@ export function createApp(): Express {
 
   // --- Routes ---
   app.use('/health', healthRouter)
-  app.use('/api/v1', apiV1Router) // private: needs a logged-in user
+  app.use('/api/v1', rejectCrossSiteWrites, apiV1Router) // private: needs a logged-in user
   app.use('/t', trackingRouter) // public: the links inside emails
 
   // --- Must stay last ---
