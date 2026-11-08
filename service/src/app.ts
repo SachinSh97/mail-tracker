@@ -16,9 +16,9 @@ import { logger } from './shared/logger.js'
 export function createApp(): Express {
   const app = express()
 
-  // Render (and most hosts) put a proxy in front of us. Trusting the first proxy
+  // Render (and most hosts) put a proxy in front of us. Trusting that many proxies (TRUST_PROXY_HOPS)
   // makes req.ip the visitor's real IP, which we need to recognise your own hits.
-  app.set('trust proxy', 1)
+  app.set('trust proxy', env.TRUST_PROXY_HOPS)
   app.disable('x-powered-by')
 
   // --- Middleware that runs on every request ---
