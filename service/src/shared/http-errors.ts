@@ -32,6 +32,12 @@ export class ForbiddenError extends HttpError {
   }
 }
 
+export class TooManyRequestsError extends HttpError {
+  constructor(message = 'Too many requests. Please slow down.') {
+    super(429, 'TOO_MANY_REQUESTS', message)
+  }
+}
+
 export class NotFoundError extends HttpError {
   constructor(message = 'Not found') {
     super(404, 'NOT_FOUND', message)
