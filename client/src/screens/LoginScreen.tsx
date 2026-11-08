@@ -1,6 +1,7 @@
 import { useState } from 'react'
-import { useLocation } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import { GoogleLogo } from '../components/GoogleLogo'
+import { paths } from '../constants/routes'
 import { DeveloperCredit } from '../components/login/DeveloperCredit'
 import { FeatureSlider } from '../components/login/FeatureSlider'
 import { useDocumentTitle } from '../hooks/useDocumentTitle'
@@ -49,7 +50,7 @@ export function LoginScreen() {
           )}
 
           <p className="text-center text-xs text-fg-faint">
-            We only use your Google account’s email and name.
+            We only use your email and name. <Link to={paths.privacy()}>Privacy policy</Link>
           </p>
         </div>
       </main>

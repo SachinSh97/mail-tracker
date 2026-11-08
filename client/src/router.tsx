@@ -24,6 +24,12 @@ export const router = createBrowserRouter([
         errorElement: <ErrorScreen />,
         lazy: () => import('./screens/AuthCallbackScreen').then((m) => ({ Component: m.AuthCallbackScreen })),
       },
+      // Public: the privacy policy (linked from the sign-in screen and Google's consent screen)
+      {
+        path: ROUTES.privacy,
+        errorElement: <ErrorScreen />,
+        lazy: () => import('./screens/PrivacyScreen').then((m) => ({ Component: m.PrivacyScreen })),
+      },
       {
         // Everything below needs a signed-in user
         element: <RequireAuth />,

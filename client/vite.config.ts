@@ -94,6 +94,7 @@ function seo(siteUrl: string): Plugin {
       const robots = [
         'User-agent: *',
         'Allow: /$',
+        'Allow: /privacy$',
         'Disallow: /',
         ...(siteUrl ? ['', `Sitemap: ${siteUrl}/sitemap.xml`] : []),
       ]
@@ -103,6 +104,7 @@ function seo(siteUrl: string): Plugin {
         const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url><loc>${siteUrl}/</loc></url>
+  <url><loc>${siteUrl}/privacy</loc></url>
 </urlset>
 `
         this.emitFile({ type: 'asset', fileName: 'sitemap.xml', source: sitemap })

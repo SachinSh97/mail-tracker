@@ -12,6 +12,8 @@ export const ROUTES = {
   notifications: '/notifications',
   /** Google sends the browser back here after sign-in. Must be listed in Google Cloud Console. */
   authCallback: '/auth/callback',
+  /** Public: needed for Google sign-in's consent screen */
+  privacy: '/privacy',
   notFound: '*',
 } as const
 
@@ -26,4 +28,6 @@ export const paths = {
   tracker: (trackerId: string) => `/trackers/${encodeURIComponent(trackerId)}`,
 
   notifications: () => ROUTES.notifications,
+
+  privacy: () => ROUTES.privacy,
 }
