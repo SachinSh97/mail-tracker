@@ -1,0 +1,79 @@
+# Render Blueprint: creates both parts of Seenly from this repo.
+# Render → New → Blueprint → pick this repo. See DEPLOY.md for the full walkthrough.
+#
+#   seenly-app  static site (client/)   https://seenly-app.onrender.com
+#               forwards /api/* to the service, so the browser only ever talks to this one address
+#               and the session cookie is an ordinary same-site cookie
+#   seenly-api  Node web service (service/)   https://seenly-api.onrender.com
+#               the tracking pixel in emails points straight here
+#
+# If Render gives a service a different address (the name was taken), update the /api/* destination
+# below and the env vars marked "address" to match.
+
+services:
+  # ------------------------------------------------------------------ service (API + tracking pixel)
+  - type: web
+    name: seenly-api
+    runtime: node
+    plan: free # free sleeps after ~15 min idle and can miss opens; `starter` stays awake
+    region: singapore # closest to India; change if your users are elsewhere
+    buildFilter:
+      paths: [service/**]
+    # --include=dev: NODE_ENV=production below would otherwise skip TypeScript and the Prisma CLI.
+    # Database migrations run during the build: the free plan has no pre-deploy step, and if a
+    # migration fails the deploy stops before the new version goes live.
+    buildCommand: cd service && npm ci --include=dev && npm run build && npm run db:deploy
+    startCommand: cd service && npm start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_VERSION
+        value: '22'
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL # Neon → Connect → pooled connection string (host contains "-pooler")
+        sync: false
+      - key: GOOGLE_CLIENT_ID # same value as VITE_GOOGLE_CLIENT_ID below
+        sync: false
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: PUBLIC_BASE_URL # address: this service, e.g. https://seenly-api.onrender.com
+        sync: false
+      - key: CORS_ORIGINS # address: the web app, e.g. https://seenly-app.onrender.com
+        sync: false
+      - key: TRUST_PROXY_HOPS # check after the first deploy, see DEPLOY.md
+        value: '1'
+
+  # ------------------------------------------------------------------ web app
+  - type: web
+    name: seenly-app
+    runtime: static
+    buildFilter:
+      paths: [client/**]
+    buildCommand: cd client && npx --yes pnpm@10.19.0 install --frozen-lockfile && npx --yes pnpm@10.19.0 build
+    staticPublishPath: ./client/dist
+    routes:
+      # Order matters: the API first, then every other path serves the app (it does its own routing)
+      - type: rewrite
+        source: /api/*
+        destination: https://seenly-api.onrender.com/api/* # address: the service
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    headers:
+      # Built files have a content hash in their name, so they can be cached forever
+      - path: /assets/*
+        name: Cache-Control
+        value: public, max-age=31536000, immutable
+      # The page itself must always be fresh, so a new deploy is picked up straight away
+      - path: /index.html
+        name: Cache-Control
+        value: no-cache
+    envVars:
+      - key: VITE_API_URL # empty: the app calls /api on its own address (forwarded above)
+        value: ''
+      - key: VITE_GOOGLE_CLIENT_ID
+        sync: false
+      - key: VITE_SITE_URL # address: the web app, e.g. https://seenly-app.onrender.com
+        sync: false
+      - key: VITE_CONTACT_EMAIL # shown publicly on /privacy for questions and deletion requests
+        sync: false

@@ -121,8 +121,7 @@ pnpm dev                # http://localhost:5173
 ### 5. Track a real email
 
 > **Important:** a pixel pointing at `localhost` only works on your own computer. Gmail loads images through
-> Google's servers, which can't reach your laptop. To track real emails, deploy the service (see Next phase)
-> and set `PUBLIC_BASE_URL` to its public address.
+> Google's servers, which can't reach your laptop. To track real emails, deploy it: see [DEPLOY.md](DEPLOY.md).
 
 1. Click **Track**, then enter the subject and recipient.
 2. Click **Copy tracking pixel**, paste it at the end of your Gmail message, and send.
@@ -140,14 +139,13 @@ Run the tests with `cd service && npm test`.
 
 ## Next phase
 
-| #   | Step                                                                                                | Why                                                                                                                             |
-| --- | --------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| 1   | **Deploy**: service on Render (free), web app as a static site, plus a keep-alive ping every 10 min | Gives the pixel a public address, so real opens can be tracked. The ping stops the free server from sleeping and missing opens. |
-| 2   | **Test with real inboxes**: Gmail, Outlook, Apple Mail; check spam placement                        | Confirms which mail apps report opens, and that emails still reach the inbox                                                    |
-| 3   | **"Mark as sent"**                                                                                  | Starts counting opens only after you've sent the email, so viewing your own draft or Sent folder isn't counted                  |
-| 4   | **Live updates (SSE)**                                                                              | The web app updates the moment an email is opened, without refreshing                                                           |
-| 5   | **Per-recipient tracking helper**                                                                   | Creates one tracker per recipient in a single step, so you know exactly who opened                                              |
-| 6   | **Own domain**                                                                                      | A custom domain for the pixel, which looks more trustworthy and helps delivery                                                  |
+| #   | Step                                                                               | Why                                                                                                            |
+| --- | ---------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| 1   | **Deploy** to Render with [`render.yaml`](render.yaml): see [DEPLOY.md](DEPLOY.md) | Gives the pixel a public address, so real opens can be tracked                                                 |
+| 2   | **Test with real inboxes**: Gmail, Outlook, Apple Mail; check spam placement       | Confirms which mail apps report opens, and that emails still reach the inbox                                   |
+| 3   | **"Mark as sent"**                                                                 | Starts counting opens only after you've sent the email, so viewing your own draft or Sent folder isn't counted |
+| 4   | **Per-recipient tracking helper**                                                  | Creates one tracker per recipient in a single step, so you know exactly who opened                             |
+| 5   | **Own domain**                                                                     | A custom domain for the pixel, which looks more trustworthy and helps delivery                                 |
 
 ---
 
