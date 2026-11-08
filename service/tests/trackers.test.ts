@@ -106,7 +106,10 @@ describe('List, read, update, delete trackers', () => {
     const res = await api().get(`/api/v1/trackers/${created.body.id}`).set(asOwner)
     expect(res.status).toBe(200)
     expect(res.body.hits).toHaveLength(1)
-    expect(res.body.hits[0]).toMatchObject({ outcome: 'COUNTED_AS_OPEN', userAgent: 'GoogleImageProxy' })
+    expect(res.body.hits[0]).toMatchObject({ outcome: 'COUNTED_AS_OPEN' })
+    // The recipient's IP and browser are only used by the tracking rules, never sent out
+    expect(res.body.hits[0]).not.toHaveProperty('userAgent')
+    expect(res.body.hits[0]).not.toHaveProperty('ipAddress')
   })
 
   it('moves a tracker into and out of a collection', async () => {

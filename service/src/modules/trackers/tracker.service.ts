@@ -25,8 +25,6 @@ export interface TrackerResponse {
 export interface HitResponse {
   id: string
   outcome: HitOutcome
-  ipAddress: string | null
-  userAgent: string | null
   createdAt: Date
 }
 

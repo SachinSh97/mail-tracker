@@ -44,7 +44,8 @@ export function findOwnedTrackerWithHits(userId: string, trackerId: string) {
     select: {
       ...trackerFields,
       hits: {
-        select: { id: true, outcome: true, ipAddress: true, userAgent: true, createdAt: true },
+        // Not ipAddress/userAgent: that's personal data about the recipient, only needed by the tracking rules
+        select: { id: true, outcome: true, createdAt: true },
         orderBy: { createdAt: 'desc' },
         take: RECENT_HITS_LIMIT,
       },
