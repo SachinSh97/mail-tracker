@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom'
+import { Link } from '../components/Link'
 import { Icon } from '../components/Icon'
 import { ErrorState, Placeholder, Skeleton } from '../components/LoadState'
 import { NO_COLLECTION_NAME } from '../constants/collections'

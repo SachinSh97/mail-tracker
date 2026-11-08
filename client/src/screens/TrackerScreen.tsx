@@ -1,5 +1,7 @@
 import { useState } from 'react'
-import { Link, useNavigate, useParams } from 'react-router-dom'
+import { useParams } from 'react-router-dom'
+import { Link } from '../components/Link'
+import { useAppNavigate } from '../hooks/useAppNavigate'
 import { ConfirmSheet } from '../components/ConfirmSheet'
 import { CopyPixelButton } from '../components/CopyPixelButton'
 import { Icon } from '../components/Icon'
@@ -14,7 +16,7 @@ import { toast } from '../utils/toast'
 
 export function TrackerScreen() {
   const { trackerId = '' } = useParams()
-  const navigate = useNavigate()
+  const navigate = useAppNavigate()
   const { tracker, view, error, reload, remove } = useTracker(trackerId)
   useDocumentTitle(view?.title)
 

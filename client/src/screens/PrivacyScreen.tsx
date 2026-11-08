@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { Link } from 'react-router-dom'
+import { Link } from '../components/Link'
 import { Icon } from '../components/Icon'
 import { paths } from '../constants/routes'
 import { useDocumentTitle } from '../hooks/useDocumentTitle'

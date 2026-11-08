@@ -1,5 +1,7 @@
 import type { SubmitEvent } from 'react'
-import { Link, useNavigate, useSearchParams } from 'react-router-dom'
+import { useSearchParams } from 'react-router-dom'
+import { Link } from '../components/Link'
+import { useAppNavigate } from '../hooks/useAppNavigate'
 import { Icon } from '../components/Icon'
 import { Select } from '../components/Select'
 import { paths } from '../constants/routes'
@@ -21,7 +23,7 @@ import {
 
 export function AddTrackerScreen() {
   useDocumentTitle('Add tracker')
-  const navigate = useNavigate()
+  const navigate = useAppNavigate()
   // Opened from a collection screen? Pre-select that collection and go back there on close.
   const [searchParams] = useSearchParams()
   const preselectedCollectionId = searchParams.get('collection')

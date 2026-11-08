@@ -111,3 +111,75 @@
     @apply outline-2 outline-offset-2 outline-accent;
   }
 }
+
+/*
+ * Changing screens (View Transitions API, started by components/Link.tsx and hooks/useAppNavigate.ts).
+ * Only the screen inside the phone frame moves; the frame, background and toasts stay still.
+ * Forward (deeper screen): the new one slides in from the right over the old one, which drifts left.
+ * Back: the reverse. <html data-nav> says which, see utils/screen-transition.ts.
+ */
+::view-transition-group(screen) {
+  overflow: clip; /* keep the sliding screens inside the frame */
+  animation-duration: 0.3s;
+  animation-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+@media (width >= 40rem) {
+  ::view-transition-group(screen) {
+    border-radius: calc(var(--frame-radius) - var(--frame-bezel));
+  }
+}
+::view-transition-old(screen),
+::view-transition-new(screen) {
+  animation-duration: inherit;
+  animation-timing-function: inherit;
+  mix-blend-mode: normal;
+}
+::view-transition-old(screen) {
+  animation-name: screen-out-left;
+}
+::view-transition-new(screen) {
+  animation-name: screen-in-right;
+}
+html[data-nav='back']::view-transition-old(screen) {
+  animation-name: screen-out-right;
+  z-index: 1; /* going back, the screen we leave slides away on top */
+}
+html[data-nav='back']::view-transition-new(screen) {
+  animation-name: screen-in-left;
+}
+/* The rest of the page doesn't change, so it shouldn't fade */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+}
+
+@keyframes screen-in-right {
+  from {
+    transform: translateX(100%);
+  }
+}
+@keyframes screen-out-left {
+  to {
+    transform: translateX(-25%);
+    opacity: 0.6;
+  }
+}
+@keyframes screen-in-left {
+  from {
+    transform: translateX(-25%);
+    opacity: 0.6;
+  }
+}
+@keyframes screen-out-right {
+  to {
+    transform: translateX(100%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
+}

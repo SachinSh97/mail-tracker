@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link } from './Link'
 import { paths } from '../constants/routes'
 import type { TrackerFilter } from '../hooks/useTrackerFilter'
 import { TRACKERS_PAGE_SIZE, useTrackersPage } from '../hooks/useTrackersPage'

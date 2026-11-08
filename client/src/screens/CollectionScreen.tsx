@@ -1,5 +1,7 @@
 import { useState, type SubmitEvent } from 'react'
-import { Link, useNavigate, useParams } from 'react-router-dom'
+import { useParams } from 'react-router-dom'
+import { Link } from '../components/Link'
+import { useAppNavigate } from '../hooks/useAppNavigate'
 import { ConfirmSheet } from '../components/ConfirmSheet'
 import { Icon } from '../components/Icon'
 import { ErrorState } from '../components/LoadState'
@@ -17,7 +19,7 @@ import { buttonClass, cn, iconButton, screen, screenTitle, stickyHeader } from '
 
 export function CollectionScreen() {
   const { collectionId = '' } = useParams()
-  const navigate = useNavigate()
+  const navigate = useAppNavigate()
   const collection = useCollection(collectionId)
   const { summary } = collection
   const [filter, setFilter] = useTrackerFilter()

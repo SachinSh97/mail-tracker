@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useLayoutEffect, useRef } from 'react'
 import { Outlet, useLocation } from 'react-router-dom'
 import { Toaster } from '../components/Toaster'
 
@@ -16,7 +16,9 @@ export function AppLayout() {
   const { pathname } = useLocation()
   const isFirstPage = useRef(true)
 
-  useEffect(() => {
+  // Layout effect: runs before the browser paints the new screen, so the animated screen change
+  // (index.css, "screen" transition) already shows it scrolled to the top.
+  useLayoutEffect(() => {
     // A new page starts at the top. Both scroll areas are reset: the window (phone) and the frame (wider screens).
     window.scrollTo(0, 0)
     screenRef.current?.scrollTo(0, 0)
@@ -32,11 +34,13 @@ export function AppLayout() {
       {/* The phone: a dark bezel with rounded corners. Only drawn from `sm` up. */}
       <div className="relative flex w-full flex-col sm:h-(--frame-height) sm:w-(--frame-width) sm:overflow-hidden sm:rounded-(--frame-radius) sm:border-(length:--frame-bezel) sm:border-black sm:app-background sm:shadow-[0_0_0_1px_var(--color-line-strong),0_30px_80px_rgb(0_0_0/0.6)]">
         {/* The screen: scrolls inside the frame, so the frame and toasts stay put.
-            tabIndex -1: focusable from code (see above) but not a Tab stop. */}
+            tabIndex -1: focusable from code (see above) but not a Tab stop.
+            [view-transition-name:screen]: this is the part that slides when changing screens (index.css).
+            It has its own background so the sliding screens don't show through each other. */}
         <div
           ref={screenRef}
           tabIndex={-1}
-          className="flex min-h-dvh flex-1 flex-col outline-none sm:min-h-0 sm:overflow-y-auto sm:overscroll-contain"
+          className="flex min-h-dvh flex-1 flex-col app-background outline-none [view-transition-name:screen] sm:min-h-0 sm:overflow-y-auto sm:overscroll-contain"
         >
           <Outlet />
         </div>

@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom'
+import { Link } from '../components/Link'
 import { Placeholder } from '../components/LoadState'
 import { paths } from '../constants/routes'
 import { useDocumentTitle } from '../hooks/useDocumentTitle'

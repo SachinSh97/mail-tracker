@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom'
+import { Link } from '../components/Link'
 import { paths } from '../constants/routes'
 import { AppIcon } from '../components/AppIcon'
 import { Icon } from '../components/Icon'
