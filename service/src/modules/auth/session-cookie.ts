@@ -4,14 +4,16 @@ import { isProduction } from '../../config/env.js'
 // The session token lives in an HttpOnly cookie, never in localStorage:
 //   - the browser stores it and sends it with every request to this service automatically
 //   - page scripts can't read it, so even a cross-site scripting bug can't steal it
-//   - SameSite=Lax: other websites can't make the browser send it with their POST/PATCH/DELETE requests
+//   - SameSite=Strict: the browser never sends it on a request started by another website, not even
+//     when that site navigates the tab to us. The cookie is only needed on the web app's own API calls,
+//     so this costs nothing.
 // In production the "__Host-" prefix makes the browser enforce Secure (HTTPS only), Path=/ and no Domain.
 export const SESSION_COOKIE = isProduction ? '__Host-mail_tracker_session' : 'mail_tracker_session'
 
 const cookieOptions: CookieOptions = {
   httpOnly: true,
   secure: isProduction, // local development runs on plain http://localhost
-  sameSite: 'lax',
+  sameSite: 'strict',
   path: '/',
 }
 

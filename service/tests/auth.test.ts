@@ -58,13 +58,18 @@ describe('Sign in with Google', () => {
     expect(daysValid).toBeCloseTo(30, 0)
   })
 
+  it('marks the cookie SameSite=Strict, so other websites can never get it sent', async () => {
+    const res = await signInWithGoogle({ idToken: OWNER_GOOGLE_TOKEN })
+    expect(sessionCookieFrom(res)).toContain('SameSite=Strict')
+  })
+
   it('puts the session in an HttpOnly cookie, never in the response body', async () => {
     const res = await signInWithGoogle({ idToken: NEW_USER_GOOGLE_TOKEN })
     const cookie = sessionCookieFrom(res)
 
     expect(cookie).toBeDefined()
     expect(cookie).toContain('HttpOnly') // page scripts can't read it
-    expect(cookie).toContain('SameSite=Lax') // other sites can't send it with their POST requests
+    expect(cookie).toContain('SameSite=Strict') // other sites can't send it with their POST requests
     expect(cookie).toContain('Path=/')
     expect(cookie).toMatch(/Expires=/) // survives closing the browser, until the session ends
     expect(JSON.stringify(res.body)).not.toContain(tokenFrom(cookie!))
