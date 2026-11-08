@@ -9,7 +9,7 @@ import { useUnreadCount } from '../hooks/useLiveEvents'
 import { useSession } from '../hooks/useSession'
 import { NO_COLLECTION_ID, NO_COLLECTION_NAME } from '../constants/collections'
 import { formatCount } from '../utils/format'
-import { buttonClass, cn, iconButton, screen } from '../utils/ui'
+import { buttonClass, cn, iconButton, screen, stickyHeader } from '../utils/ui'
 import { authService } from '../services/auth.service'
 
 export function HomeScreen() {
@@ -19,7 +19,7 @@ export function HomeScreen() {
 
   return (
     <div className={screen}>
-      <header className="flex items-center justify-between gap-3 pt-3 pr-2 pl-4">
+      <header className={`${stickyHeader} flex items-center justify-between gap-3 pt-3 pr-2 pl-4 pb-2`}>
         <span className="flex items-center gap-2.5">
           <AppIcon />
           <span className="text-base font-semibold tracking-[-0.01em]">Seenly</span>

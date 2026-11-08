@@ -13,7 +13,7 @@ import { TRACKER_FILTERS, useTrackerFilter } from '../hooks/useTrackerFilter'
 import { NO_COLLECTION_NAME } from '../constants/collections'
 import { formatCount, plural } from '../utils/format'
 import { toast } from '../utils/toast'
-import { buttonClass, cn, iconButton, screen, screenTitle } from '../utils/ui'
+import { buttonClass, cn, iconButton, screen, screenTitle, stickyHeader } from '../utils/ui'
 
 export function CollectionScreen() {
   const { collectionId = '' } = useParams()
@@ -34,46 +34,43 @@ export function CollectionScreen() {
 
   return (
     <div className={screen}>
-      <header className="flex items-center gap-1 pt-3 pr-3 pb-1 pl-2">
-        <Link to={paths.home()} className={iconButton} aria-label="Back to collections">
-          <Icon name="back" />
-        </Link>
+      <header className={stickyHeader}>
+        <div className="flex items-center gap-1 pt-3 pr-3 pb-1 pl-2">
+          <Link to={paths.home()} className={iconButton} aria-label="Back to collections">
+            <Icon name="back" />
+          </Link>
 
-        {renaming && summary ? (
-          <RenameForm
-            currentName={summary.name}
-            onSave={collection.rename}
-            onClose={() => setRenaming(false)}
-          />
-        ) : (
-          <>
-            <h1 className={`${screenTitle} min-w-0 flex-1 truncate`}>{summary?.name ?? ' '}</h1>
-            {collection.isRealCollection && summary && (
-              <OptionsMenu
-                label="Collection options"
-                options={[
-                  { label: 'Rename', icon: 'pencil', onSelect: () => setRenaming(true) },
-                  {
-                    label: 'Delete collection',
-                    icon: 'trash',
-                    danger: true,
-                    onSelect: () => setConfirmingDelete(true),
-                  },
-                ]}
-              />
-            )}
-          </>
-        )}
-      </header>
-
-      {collection.error && !summary ? (
-        <ErrorState error={collection.error} onRetry={collection.reload} />
-      ) : (
-        <>
+          {renaming && summary ? (
+            <RenameForm
+              currentName={summary.name}
+              onSave={collection.rename}
+              onClose={() => setRenaming(false)}
+            />
+          ) : (
+            <>
+              <h1 className={`${screenTitle} min-w-0 flex-1 truncate`}>{summary?.name ?? ' '}</h1>
+              {collection.isRealCollection && summary && (
+                <OptionsMenu
+                  label="Collection options"
+                  options={[
+                    { label: 'Rename', icon: 'pencil', onSelect: () => setRenaming(true) },
+                    {
+                      label: 'Delete collection',
+                      icon: 'trash',
+                      danger: true,
+                      onSelect: () => setConfirmingDelete(true),
+                    },
+                  ]}
+                />
+              )}
+            </>
+          )}
+        </div>
+        {!(collection.error && !summary) && (
           <div
             role="group"
             aria-label="Filter emails"
-            className="mx-5 mt-3.5 mb-1.5 flex gap-1 rounded-xl bg-surface p-1"
+            className="mx-5 mt-2.5 mb-2 flex gap-1 rounded-xl bg-surface p-1"
           >
             {TRACKER_FILTERS.map(({ value, label }) => {
               const active = value === filter
@@ -106,7 +103,13 @@ export function CollectionScreen() {
               )
             })}
           </div>
+        )}
+      </header>
 
+      {collection.error && !summary ? (
+        <ErrorState error={collection.error} onRetry={collection.reload} />
+      ) : (
+        <>
           <main className="flex flex-1 flex-col px-5 pt-1 pb-5">
             {/* key: start a fresh list (back to page 1) whenever the filter changes */}
             <TrackerList key={filter} collectionId={collectionId} filter={filter} />

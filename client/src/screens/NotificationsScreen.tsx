@@ -7,7 +7,7 @@ import { useDocumentTitle } from '../hooks/useDocumentTitle'
 import { useNotifications } from '../hooks/useNotifications'
 import type { Notification } from '../services/types'
 import { formatDateTime, formatFullDateTime } from '../utils/format'
-import { cn, iconButton, screen, screenTitle } from '../utils/ui'
+import { cn, iconButton, screen, screenTitle, stickyHeader } from '../utils/ui'
 
 export function NotificationsScreen() {
   useDocumentTitle('Notifications')
@@ -15,7 +15,7 @@ export function NotificationsScreen() {
 
   return (
     <div className={screen}>
-      <header className="flex items-center gap-1 pt-3 pr-3 pb-1 pl-2">
+      <header className={`${stickyHeader} flex items-center gap-1 pt-3 pr-3 pb-1 pl-2`}>
         <Link to={paths.home()} className={iconButton} aria-label="Back to collections">
           <Icon name="back" />
         </Link>

@@ -16,6 +16,7 @@ import {
   screen,
   screenBody,
   screenTitle,
+  stickyHeader,
 } from '../utils/ui'
 
 export function AddTrackerScreen() {
@@ -39,7 +40,7 @@ export function AddTrackerScreen() {
 
   return (
     <div className={screen}>
-      <header className="flex items-center gap-1 pt-3 pr-2 pl-5">
+      <header className={`${stickyHeader} flex items-center gap-1 pt-3 pr-2 pl-5 pb-2`}>
         <h1 className={`${screenTitle} flex-1`}>Add tracker</h1>
         <Link to={closeTo} className={iconButton} aria-label="Close">
           <Icon name="close" />

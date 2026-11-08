@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { Icon } from '../components/Icon'
 import { paths } from '../constants/routes'
 import { useDocumentTitle } from '../hooks/useDocumentTitle'
-import { iconButton, screen, screenTitle } from '../utils/ui'
+import { iconButton, screen, screenTitle, stickyHeader } from '../utils/ui'
 
 // Public page (no sign-in needed). Google requires a privacy policy link before sign-in can be
 // opened to everyone. Keep it in step with what the app really does: if the data the service
@@ -17,7 +17,7 @@ export function PrivacyScreen() {
 
   return (
     <div className={screen}>
-      <header className="flex items-center gap-1 pt-3 pr-3 pb-1 pl-2">
+      <header className={`${stickyHeader} flex items-center gap-1 pt-3 pr-3 pb-1 pl-2`}>
         <Link to={paths.home()} className={iconButton} aria-label="Back to Seenly">
           <Icon name="back" />
         </Link>

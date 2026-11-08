@@ -47,4 +47,11 @@ export const errorText = 'text-[13px] text-danger'
 
 export const screen = 'flex flex-1 flex-col'
 export const screenBody = 'flex flex-1 flex-col gap-4.5 px-5 pt-3 pb-5'
+/**
+ * A screen's top bar that stays in view while the content scrolls (on a phone the page scrolls,
+ * on wider screens the phone frame does; sticky works for both). No background of its own: content
+ * scrolling underneath is blurred, so the header stays readable on the background glow.
+ */
+export const stickyHeader = 'sticky top-0 z-10 backdrop-blur-md'
+
 export const screenTitle = 'text-lg font-semibold tracking-[-0.01em]'

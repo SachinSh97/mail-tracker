@@ -8,7 +8,7 @@ import { paths } from '../constants/routes'
 import { useDocumentTitle } from '../hooks/useDocumentTitle'
 import { useTracker, type TrackerView } from '../hooks/useTracker'
 import { formatDateTime, formatFullDateTime, inSentence, plural } from '../utils/format'
-import { buttonClass, card, cn, fieldHint, iconButton, screen, screenBody } from '../utils/ui'
+import { buttonClass, card, cn, fieldHint, iconButton, screen, screenBody, stickyHeader } from '../utils/ui'
 import type { TrackerDetails } from '../services/types'
 import { toast } from '../utils/toast'
 
@@ -28,7 +28,7 @@ export function TrackerScreen() {
 
   return (
     <div className={screen}>
-      <header className="flex items-center gap-1 pt-3 pr-3 pl-2">
+      <header className={`${stickyHeader} flex items-center gap-1 pt-3 pr-3 pl-2 pb-2`}>
         <Link
           to={view?.collectionPath ?? paths.home()}
           className={iconButton}
